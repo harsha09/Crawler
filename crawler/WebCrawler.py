@@ -26,7 +26,7 @@ class WebCrawler(object):
             }
         }
     }
-    print(WebCrawler(**kwargs).crawl())    
+    print(WebCrawler(**kwargs).crawl())
     """
 
     def __init__(self, **kwargs):
@@ -54,8 +54,12 @@ class WebCrawler(object):
 
     @classmethod
     def get_output(cls, scraped, return_type, attr):
-
-        output = [dom[attr].strip() for dom in scraped] if attr else [dom.text.strip() for dom in scraped]
+        """Returns the innerHTMLText if attr is None. If attr is passed then returns the
+        text of that respective html attribute.
+        For Example: if attr=href returns href of all the attributes.
+        if return_type is string then string is returned by joining the list else list is returned."""
+        output = [dom[attr].strip() if attr else dom.text.strip() for dom in scraped]
+        # output = [dom[attr].strip() for dom in scraped] if attr else [dom.text.strip() for dom in scraped]
 
         if return_type == 'string':
             output = '. '.join(output)
@@ -64,6 +68,7 @@ class WebCrawler(object):
 
 
     def crawl(self):
+        """Loops through selectors dictionary and returns all selectors."""
         output = {}
         selector = ''
         return_type = 'string'
@@ -82,4 +87,3 @@ class WebCrawler(object):
                 self._response().select(selector), return_type, attr)
 
         return output
-
