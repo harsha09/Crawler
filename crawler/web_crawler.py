@@ -33,57 +33,49 @@ class WebCrawler(object):
 
         header = {'User-Agent': generate_user_agent(device_type='desktop', os=('linux', 'mac'))}
         self.header = kwargs.get('header', header)
-        self.url = kwargs.get('url')
-        self.selectors = kwargs.get('selectors')
-
-        if not self.url:
-            raise KeyError('Give a url to scrape.')
-
-        if self.selectors is None:
-            raise KeyError('Provide Selectors to extract the content.')
-
-        if not isinstance(self.selectors, dict):
-            raise ValueError('Selectors should be of type key value pairs.')
     
-    def _response(self):
-        response = get(self.url, headers=self.header, timeout=10)
+    def _response(self, url):
+        response = get(url, headers=self.header, timeout=10, verify=False)
         if response.status_code == 200:
             return BeautifulSoup(response.text, 'lxml')
         else:
             response.raise_for_status()
 
     @classmethod
-    def get_output(cls, scraped, return_type, attr):
+    def get_output(cls, markup, return_type, attr):
         """Returns the innerHTMLText if attr is None. If attr is passed then returns the
         text of that respective html attribute.
         For Example: if attr=href returns href of all the attributes.
         if return_type is string then string is returned by joining the list else list is returned."""
-        output = [dom[attr].strip() if attr else dom.text.strip() for dom in scraped]
-        # output = [dom[attr].strip() for dom in scraped] if attr else [dom.text.strip() for dom in scraped]
+        if attr == 'tags':
+            return markup
+        output = [dom[attr].strip() if attr else dom.text.strip() for dom in markup]
 
         if return_type == 'string':
             output = '. '.join(output)
 
         return output
 
-
-    def crawl(self):
+    def crawl(self, **kwargs):
         """Loops through selectors dictionary and returns all selectors."""
+
+        url = kwargs.get('url')
+        selectors = kwargs.get('selectors')
+
         output = {}
         selector = ''
         return_type = 'string'
-        attr = None
 
-        for key, value in self.selectors.items():
-
+        for key, value in selectors.items():
             if isinstance(value, dict):
                 selector = value.get('selector')
                 return_type = value.get('return_type', 'string')
                 attr = value.get('attr')
             else:
+                attr = None
                 selector = value
 
             output[key] = WebCrawler.get_output(
-                self._response().select(selector), return_type, attr)
+                self._response(url).select(selector), return_type, attr)
 
         return output
