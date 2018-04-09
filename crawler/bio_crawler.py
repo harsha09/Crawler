@@ -11,11 +11,41 @@ def get_from_naviscapital(data, mapping):
         name = item[0].select('strong')[0].text.strip()
         designation = item[0].select('span')[0].text.strip()
         bio = "".join([bio_tag.text for bio_tag in item[2:]])
+
         yield {
             mapping['Name']: name,
             mapping['BIO']: bio,
             mapping['Title']: designation
         }
+
+def get_from_jll_bod(data, mapping):
+    items = split_list1(data, 'h3')
+    import pdb
+    pdb.set_trace()
+    for item in items:
+        temp = {}
+        name = item[0].select('h3').text.strip()
+        # designation = item[]
+    import pdb
+    pdb.set_trace()
+
+def split_list1(l, cond):
+    output = []
+    temp = []
+    first = True
+    for i in l:
+        if first:
+            temp += [i]
+        if i.name == cond:
+            if not first:
+                output.append(temp)
+                temp = []
+            else:
+                first = False
+        if not first:
+            temp += [i]
+    output.append(temp)
+    return output
 
 def split_list(l, cond):
     output = []
@@ -27,6 +57,14 @@ def split_list(l, cond):
         else:
             temp += [i]
     return output
+
+def write_to_file(data):
+    data = pd.DataFrame.from_dict(data, orient='index').T
+    output_data = pd.DataFrame()
+    if os.path.exists('output.csv'):
+        output_data = pd.read_csv('output.csv')
+
+    pd.concat([output_data, data]).to_csv('output.csv', index=False)
 
 class BioCrawler(WebCrawler):
     def __init__(self, **kwargs):
@@ -57,7 +95,7 @@ class BioCrawler(WebCrawler):
             func = eval(compile(func, 'temp.txt', mode='eval'))
             output = func(links.get('Data', []), self.config.get('function'))
             for i in output:
-                print(i)
+                write_to_file(i)
         else:
             count = 0
 
@@ -71,14 +109,14 @@ class BioCrawler(WebCrawler):
                 if replacer:
                     for replacer_key in replacer:
                         replacer_vals = links.get(replacer[replacer_key].replace('{{', '').replace('}}', '').strip(), [])
-                        output.update({replacer_key: replacer_vals[count]})
-            
-                data = pd.DataFrame.from_dict(output, orient='index').T
-                output_data = pd.DataFrame()
-                if os.path.exists('output.csv'):
-                    output_data = pd.read_csv('output.csv', encoding='cp1252')
-                
-                pd.concat([output_data, data]).to_csv('output.csv', index=False, encoding='cp1252')
+                        if len(replacer_vals) == 1:
+                            replacer_val = replacer_vals[0]
+                        else:
+                            replacer_val = replacer_vals[count]
+
+                        output.update({replacer_key: replacer_val})
+
+                write_to_file(output)                
                 count += 1
 
     @classmethod
@@ -89,9 +127,9 @@ class BioCrawler(WebCrawler):
 
         return selectors        
 
+if __name__ == '__main__':
+    with open('seerconfig.yaml') as file_handler:
+        configs = yaml.load(file_handler)
 
-with open('seerconfig.yaml') as file_handler:
-    configs = yaml.load(file_handler)
-
-for config in configs:
-    BioCrawler(config=config['stories_link'])
+    for config in configs:
+        BioCrawler(config=config['stories_link'])

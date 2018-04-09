@@ -1,0 +1,36 @@
+- stories_link:
+    url: 'https://www.bloomberg.com/markets'
+    selectors:
+      base_links:
+        selector: '.top-news-v3__stories .top-news-v3-story-view .top-news-v3-story-headline a'
+        return_type: 'list'
+        attr: 'href'
+    articles:
+      base_url: 'https://www.bloomberg.com'
+      selectors:
+        Author: 'address .author'
+        ReleaseDate: 
+          selector: '.article-timestamp'
+          attr: 'datetime'
+        Headline: 'h1[class*=hed] span[class*=highlight]'
+        NewsStory: '.body-copy p'
+
+- stories_link:
+    url: 'https://www.reuters.com/finance'
+    selectors:
+      - base_links:
+          selector: 'div[id=latestHeadlines] .moduleHeader a'
+          return_type: 'list'
+          attr: 'href'
+      - base_links:
+          base_url: 'https://www.reuters.com'
+          selector: '.news-headline-list .story-content a'
+          return_type: 'list'
+          attr: 'href'
+    articles:
+      base_url: 'https://www.reuters.com'
+      selectors:
+        Author: '.lower-container p[class*=byline]'
+        ReleaseDate: 'div[class*=date]'
+        Headline: 'h1[class*=headline]'
+        NewsStory: 'div[class*=column] div[class*=body] p'

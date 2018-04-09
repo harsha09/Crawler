@@ -1,0 +1,78 @@
+# - stories_link:
+#     url: 'http://seercap.com/people'
+#     selectors:
+#       base_links:
+#         selector: 'article[class*=people] section[itemprop*=articleBody] a'
+#         return_type: 'list'
+#         attr: 'href'
+#       Designation:
+#         selector: 'h1[itemprop*=headline] + p'
+#         return_type: 'list'
+#     bio_selectors:
+#       base_url: 'http://seercap.com/people'
+#       selectors:
+#         Name: 'article[class*=people] .post-title'
+#         BIO: 'section[itemprop*=articleBody] p'
+#         Title: '{{ Designation }}'
+
+# - stories_link:
+#     url: 'https://www.naviscapital.com/web/navis/investment-committee-members'
+#     selectors:
+#       Data:
+#         selector: '.journal-content-article *'
+#         attr: 'tags'
+#     function:
+#       func_name: 'get_from_naviscapital'
+#       Name: 'Name'
+#       BIO: 'BIO'
+#       Title: 'Title'
+
+# - stories_link:
+#     url: 'http://www.jll.com/about/board-of-directors-and-governance'
+#     selectors:
+#       Data:
+#         selector: '#ctl00_PlaceHolderMain_DeviceChannelAuthoringControl_ctl00_PageContentField__ControlWrapper_RichHtmlField > h3,p'
+#         attr: 'tags'
+#     function:
+#       func_name: 'get_from_jll_bod'
+#       Name: 'Name'
+#       BIO: 'BIO'
+#       Title: 'Title'
+
+- stories_link:
+    url: 'http://www.jll.com/about/global-management'
+    selectors:
+      base_links:
+        selector: 'table tr td a'
+        return_type: 'list'
+        attr: 'href'
+      page_title:
+        selector: '#DeltaPlaceHolderPageTitleInTitleArea'
+        return_type: 'list'
+    bio_selectors:
+      selectors:
+        Name: '.profile h2'
+        BIO: '.mainedit3 p'
+        Title: '.profile h3'
+        Division: '{{ page_title }}'
+
+# - stories_link:
+#     url: 'https://www.vistra.com/about-us/senior_management'
+#     selectors:
+#       base_links:
+#         selector: '.management-board .people-grid-title a'
+#         return_type: 'list'
+#         attr: 'href'
+#       page_title:
+#         selector: 'section[id=block-system-main] .row .page-title h2'
+#         return_type: 'list'
+#     bio_selectors:
+#       base_url: 'https://www.vistra.com'
+#       selectors:
+#         Name: '.profile-content h1 .field-item'
+#         BIO: '.bio .field-item p'
+#         Title: '.profile-content h1 + h2'
+#         Division: '{{ page_title }}'
+
+
+
