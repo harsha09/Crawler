@@ -52,7 +52,7 @@ class WebCrawler(object):
         output = [dom[attr].strip() if attr else dom.text.strip() for dom in markup]
 
         if return_type == 'string':
-            output = '. '.join(output).encode(encoding='cp1252', errors='ignore')
+            output = ''.join(output).encode(encoding='utf8', errors='ignore')
 
         return output
 
@@ -78,6 +78,6 @@ class WebCrawler(object):
             output[key] = WebCrawler.get_output(
                 self._response(url).select(selector), return_type, attr)
             if isinstance(output[key], bytes):
-                output[key] = output[key].decode('cp1252')
+                output[key] = output[key].decode('utf8')
 
         return output
