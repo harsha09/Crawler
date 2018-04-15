@@ -56,24 +56,7 @@
         Bio: '.mainedit3 p'
         Title: '.profile h3'
         Division: '{{ page_title }}'
-
-- stories_link:
-    url: 'https://www.vistra.com/about-us/senior_management'
-    selectors:
-      base_links:
-        selector: '.management-board .people-grid-title a'
-        return_type: 'list'
-        attr: 'href'
-      page_title:
-        selector: 'section[id=block-system-main] .row .page-title h2'
-        return_type: 'list'
-    bio_selectors:
-      base_url: 'https://www.vistra.com'
-      selectors:
-        Name: '.profile-content h1 .field-item'
-        Bio: '.bio .field-item p'
-        Title: '.profile-content h1 + h2'
-        Division: '{{ page_title }}'
+        Email: '.profile .email a'
 
 
 - stories_link:
@@ -87,3 +70,130 @@
       Name: 'Name'
       Title: 'Title'
       Division: 'Division'
+
+
+- stories_link:
+    url: 'https://www.vistra.com/about-us/senior_management'
+    selectors:
+      base_links:
+        selector: '.management-board .f_1 .people-grid-title a'
+        return_type: 'list'
+        attr: 'href'
+    bio_selectors:
+      base_url: 'https://www.vistra.com'
+      selectors:
+        Name: '.profile-content h1 .field-item'
+        Bio: '.bio .field-item p'
+        Title: '.profile-content h1 + h2'
+        Division: '{% Executive Committee %}'
+        Phone-1: '.profile-content .tel'
+        Phone-2: '.profile-content .mobile'
+        Email: '.email'
+
+- stories_link:
+    url: 'https://www.vistra.com/about-us/senior_management'
+    selectors:
+      base_links:
+        selector: '.management-board .f_2 .people-grid-title a'
+        return_type: 'list'
+        attr: 'href'
+    bio_selectors:
+      base_url: 'https://www.vistra.com'
+      selectors:
+        Name: '.profile-content h1 .field-item'
+        Bio: '.bio .field-item p'
+        Title: '.profile-content h1 + h2'
+        Division: '{% Private Clients %}'
+        Phone-1: '.profile-content .tel'
+        Phone-2: '.profile-content .mobile'
+        Email: '.email'
+
+- stories_link:
+    url: 'https://www.vistra.com/about-us/senior_management'
+    selectors:
+      base_links:
+        selector: '.management-board .f_3 .people-grid-title a'
+        return_type: 'list'
+        attr: 'href'
+    bio_selectors:
+      base_url: 'https://www.vistra.com'
+      selectors:
+        Name: '.profile-content h1 .field-item'
+        Bio: '.bio .field-item p'
+        Title: '.profile-content h1 + h2'
+        Division: '{% Company Formation %}'
+        Phone-1: '.profile-content .tel'
+        Phone-2: '.profile-content .mobile'
+        Email: '.email'
+
+- stories_link:
+    url: 'https://www.vistra.com/about-us/senior_management'
+    selectors:
+      base_links:
+        selector: '.management-board .f_4 .people-grid-title a'
+        return_type: 'list'
+        attr: 'href'
+    bio_selectors:
+      base_url: 'https://www.vistra.com'
+      selectors:
+        Name: '.profile-content h1 .field-item'
+        Bio: '.bio .field-item p'
+        Title: '.profile-content h1 + h2'
+        Division: '{% International Expansion %}'
+        Phone-1: '.profile-content .tel'
+        Phone-2: '.profile-content .mobile'
+        Email: '.email'
+
+- stories_link:
+    url: 'https://www.vistra.com/about-us/senior_management'
+    selectors:
+      base_links:
+        selector: '.management-board .f_5 .people-grid-title a'
+        return_type: 'list'
+        attr: 'href'
+    bio_selectors:
+      base_url: 'https://www.vistra.com'
+      selectors:
+        Name: '.profile-content h1 .field-item'
+        Bio: '.bio .field-item p'
+        Title: '.profile-content h1 + h2'
+        Division: '{% Corporate Clients %}'
+        Phone-1: '.profile-content .tel'
+        Phone-2: '.profile-content .mobile'
+        Email: '.email'
+
+- stories_link:
+    url: 'https://www.vistra.com/about-us/senior_management'
+    selectors:
+      base_links:
+        selector: '.management-board .f_6 .people-grid-title a'
+        return_type: 'list'
+        attr: 'href'
+    bio_selectors:
+      base_url: 'https://www.vistra.com'
+      selectors:
+        Name: '.profile-content h1 .field-item'
+        Bio: '.bio .field-item p'
+        Title: '.profile-content h1 + h2'
+        Division: '{% Alternative Investments %}'
+        Phone-1: '.profile-content .tel'
+        Phone-2: '.profile-content .mobile'
+        Email: '.email'
+
+- stories_link:
+    url: 'https://www.vistra.com/about-us/senior_management'
+    selectors:
+      base_links:
+        selector: '.management-board .f_7 .people-grid-title a'
+        return_type: 'list'
+        attr: 'href'
+    bio_selectors:
+      base_url: 'https://www.vistra.com'
+      selectors:
+        Name: '.profile-content h1 .field-item'
+        Bio: '.bio .field-item p'
+        Title: '.profile-content h1 + h2'
+        Division: '{% Group Functions %}'        
+        Phone-1: '.profile-content .tel'
+        Phone-2: '.profile-content .mobile'
+        Email: '.email'

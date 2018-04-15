@@ -1,5 +1,6 @@
 from requests import get
 from bs4 import BeautifulSoup
+import bs4.element
 from user_agent import generate_user_agent
 
 
@@ -35,11 +36,22 @@ class WebCrawler(object):
         self.header = kwargs.get('header', header)
     
     def _response(self, url):
-        response = get(url, headers=self.header, timeout=10, verify=False)
+        response = get(url, headers=self.header, timeout=20, verify=False)
         if response.status_code == 200:
-            return BeautifulSoup(response.text, 'lxml')
+            soup = BeautifulSoup(response.text, 'lxml')
+            for script in soup(['script', 'style']):
+                script.extract()
+            return soup
         else:
             response.raise_for_status()
+
+    @classmethod
+    def _content_delimited(cls, tag, delimiter='\r\n'):
+        if isinstance(tag, str) or isinstance(tag, bs4.element.NavigableString):
+            return tag
+
+        return '{}'.format(delimiter).join(
+            [i if isinstance(i, bs4.element.NavigableString) else i.text.strip() for i in tag.contents])
 
     @classmethod
     def get_output(cls, markup, return_type, attr):
@@ -49,10 +61,11 @@ class WebCrawler(object):
         if return_type is string then string is returned by joining the list else list is returned."""
         if attr == 'tags':
             return markup
-        output = [dom[attr].strip() if attr else dom.text.strip() for dom in markup]
+        output = [dom[attr].strip().replace('\u200b', '') if attr else WebCrawler._content_delimited(dom).replace('\u200b', '') for dom in markup]
 
         if return_type == 'string':
-            output = ''.join(output).encode(encoding='utf8', errors='ignore')
+            output = ' '.join([i for i in output if i])
+            output = output.replace('\u200b', '')
 
         return output
 
@@ -75,9 +88,10 @@ class WebCrawler(object):
                 attr = None
                 selector = value
 
-            output[key] = WebCrawler.get_output(
-                self._response(url).select(selector), return_type, attr)
-            if isinstance(output[key], bytes):
-                output[key] = output[key].decode('utf8')
+            if selector.find('{%') == -1:
+                output[key] = WebCrawler.get_output(
+                    self._response(url).select(selector), return_type, attr)
+            else:
+                output[key] = value.replace('{%', '').replace('%}', '').strip()
 
         return output

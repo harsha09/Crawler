@@ -9,7 +9,15 @@ server = 'KOMARRAJU\SQLEXPRESS'
 database = 'finacplus'
 
 data_lable_mapping = {
-    'URL': 1, 'Name': 2, 'Title': 3, 'Bio': 4, 'Division': 5
+    'URL': 1, 'Name': 2, 'Title': 3, 'Bio': 4, 'Division': 5,
+    'Phone-1': 6, 'Phone-2': 7, 'Email': 8
+}
+
+vistara_division = {
+    'f_1': 'Executive Committee', 'f_6': 'Alternative Investments',
+    'f_3': 'Company Formation', 'f_5': 'Corporate Clients',
+    'f_4': 'International Expansion', 'f_2': 'Private Clients',
+    'f_7': 'Group Functions'
 }
 
 row_num = 1
@@ -34,72 +42,75 @@ def get_from_naviscapital(data, mapping):
         bio = "".join([bio_tag.text for bio_tag in item[2:]])
 
         yield {
-            mapping['Name']: name,
-            mapping['Bio']: bio,
-            mapping['Title']: designation
+            mapping['Name']: name.replace('\u200b', ''),
+            mapping['Bio']: bio.replace('\u200b', ''),
+            mapping['Title']: designation.replace('\u200b', '')
         }
 
 def get_from_jll_bod(data, mapping):
     import re
 
     data = [i for i in data if i.name in ['p', 'h3']]
+
     items = split_list1(data, 'h3')
     for item in items:
         temp = {}
         name = item[0].text.strip()
+        name = name.replace('\u200b', '')
         name = re.sub(r'(\w)([A-Z])', r'\1 \2', name).strip()
-        bio = item[-1].text
 
-        if len(item) == 4:
-            title = item[2].select('strong')
-            title = ', '.join([i.text for i in title])
-            title = re.sub('\W+', ' ', title.strip())
+        bio = item[-1].text
+        bio = bio.replace('\u200b', '')
+
         if len(item) == 2:
-            title = ", ".join([i.text for i in item[-1].select('strong')])
-            bio = bio.replace(title.replace(', ', ''), '')
+            title_array = [i.text for i in item[-1].select('strong')]
+            title = ", ".join(title_array)
+            bio = bio.replace(''.join(title_array), '')
+        else:
+            title = BioCrawler._content_delimited(item[1:-1][0], delimiter=', ')
 
         yield {
-            mapping['Name']: name,
-            mapping['Bio']: bio,
-            mapping['Title']: title,
+            mapping['Name']: name.replace('\u200b', ''),
+            mapping['Bio']: bio.replace('\u200b', ''),
+            mapping['Title']: title.replace('\u200b', ''),
             mapping['Division']: 'Board of Directors'
         }
 
 def get_from_jll_corporate(data, mapping):
     import re
+
     names = [i.select('strong') for i in data]
     names = [''.join([i.text for i in name]) for name in names if len(name)]
     names = [re.sub('\W+', ' ', i.strip()) for i in names if len(i.strip())]
 
-    title = [i.text for i in data]
+    title = [BioCrawler._content_delimited(i, delimiter=' ') for i in data]
     title = [re.sub('\W+', ' ', i.strip()) for i in title]
     title = [i.strip() for i in title if len(i.strip())]
 
-    title = [re.sub(r'(\w)([A-Z])', r'\1 \2', title[i].replace(name, '')).strip() for i, name in enumerate(names)]
+    title = [re.sub(r'(\w)([A-Z])', r'\1 \2', title[i].replace(name.lstrip(), '')).strip() for i, name in enumerate(names)]
 
     division = ['Additional Corporate Officers'] * len(names)
     for i in zip(names, title, division):
         yield {
-            mapping['Name']: i[0],
-            mapping['Title']: i[1],
-            mapping['Division']: i[2]
+            mapping['Name']: i[0].replace('\u200b', ''),
+            mapping['Title']: i[1].replace('\u200b', ''),
+            mapping['Division']: i[2].replace('\u200b', '')
         }
 
 def split_list1(l, cond):
     output = []
     temp = []
     first = True
+
     for i in l:
-        if first:
-            temp += [i]
         if i.name == cond:
             if not first:
                 output.append(temp)
                 temp = []
             else:
                 first = False
-        if not first:
-            temp += [i]
+        temp += [i]
+
     output.append(temp)
     return output
 
@@ -136,7 +147,7 @@ def write_to_database(data, link_num):
         name = data.get('Name')
         name = name.replace("'", "''")
         for data_label in data.keys():
-            data_value = data[data_label].replace("'", " ")
+            data_value = data[data_label].replace("'", "''")
             querystring = "insert into PECCLinkData1 (PECCLinkLogID,RowNum,DataLabelID,DataLabel,DataValue,DownloadDate,BackChFlagID,UniIdentifier) values({}, {}, {}, '{}', '{}', getdate(), '{}', '{}')".format(get_log_num(), row_num, data_lable_mapping[data_label], data_label, data_value, 'New', name)
             # print(querystring)
             cur.execute(querystring)
@@ -165,7 +176,8 @@ link_num = 0
 class BioCrawler(WebCrawler):
     def __init__(self, **kwargs):
         super().__init__()
-
+        global row_num
+        row_num = 1
         self.config = kwargs.get('config')
         global link_num
         link_num += 1
@@ -206,17 +218,20 @@ class BioCrawler(WebCrawler):
 
                 replacer = {key: val for key, val in selectors.items() if val.find('{{') > -1}
 
-                output = self.crawl(url=url, selectors={key: val for key, val in selectors.items() if val.find('{{') == -1})
+                try:
+                    output = self.crawl(url=url, selectors={key: val for key, val in selectors.items() if val.find('{{') == -1})
+                    if replacer:
+                        for replacer_key in replacer:
+                            replacer_vals = links.get(replacer[replacer_key].replace('{{', '').replace('}}', '').strip(), [])
+                            if len(replacer_vals) == 1:
+                                replacer_val = replacer_vals[0]
+                            else:
+                                replacer_val = replacer_vals[count]
 
-                if replacer:
-                    for replacer_key in replacer:
-                        replacer_vals = links.get(replacer[replacer_key].replace('{{', '').replace('}}', '').strip(), [])
-                        if len(replacer_vals) == 1:
-                            replacer_val = replacer_vals[0]
-                        else:
-                            replacer_val = replacer_vals[count]
+                            output.update({replacer_key: replacer_val})
+                except Exception as e:
+                    print(e)
 
-                        output.update({replacer_key: replacer_val})
                 output.update({'URL': url})
                 write_to_database(output, link_num)
                 # write_to_file(output)                
