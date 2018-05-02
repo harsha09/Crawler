@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import bs4.element
 from user_agent import generate_user_agent
 from urllib.parse import urlparse
+import re
 
 
 class WebCrawler(object):
@@ -87,6 +88,7 @@ class WebCrawler(object):
         delimiter = '\r\n'
 
         for key, value in selectors.items():
+
             if isinstance(value, dict):
                 selector = value.get('selector')
                 return_type = value.get('return_type', 'string')
@@ -98,9 +100,22 @@ class WebCrawler(object):
 
             if selector.find('{%') == -1:
                 dom_selectors = self._response(url).select(selector)
+
                 if 'subselector' in value:
                     dom_selectors = [i.select(value.get('subselector'))[0].text.strip() for i in dom_selectors]
-                output[key] = WebCrawler.get_output(dom_selectors, return_type, attr, delimiter)
+
+                data = WebCrawler.get_output(dom_selectors, return_type, attr, delimiter)
+
+                if key == 'regex':
+                    keys = value.get('keys')
+                    for k, v in keys.items():
+                        output[k] = []
+                        for i in data:
+                            search_result = re.findall(v, i)
+                            search_result = search_result[0].strip() if len(search_result) else ''
+                            output[k].append(search_result)
+                else:
+                    output[key] = data
             else:
                 output[key] = value.replace('{%', '').replace('%}', '').strip()
 
